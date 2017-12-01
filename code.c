@@ -30,10 +30,10 @@
 /* Students, you are required to implemented the functions bellow.
    Please, refer to cpu.h for further information. */
 
-char alu_control(int IR, short int sc){
-
+char alu_control(int IR, short int sc)
+{
     sc &= separa_ALUOp0;
-    sc &= separa_ALUOp1;
+    sc |= separa_ALUOp1;
 
     sc >>= 5;
 
@@ -50,7 +50,6 @@ char alu_control(int IR, short int sc){
             IR &= separa_4bits_func;
             break;
     }
-
     switch(IR){
         case 0b0000:
             return ativa_soma; //0b0010 - soma
@@ -93,6 +92,7 @@ int alu(int a, int b, char alu_op, int *result_alu, char *zero, char *overflow)
             *result_alu = a | b;
             break;
         case ativa_slt:
+            printf("\nFez SLT");
             if(a < b)
                 *result_alu = 1;
             else
@@ -110,9 +110,10 @@ int alu(int a, int b, char alu_op, int *result_alu, char *zero, char *overflow)
   return 0;
 }
 
-
 void control_unit(int IR, short int *sc)
 {
+    //getchar();
+    printf("IR: %d", IR);
 
     if(IR == -1){
         *sc = 0b1001010000001000; //estado 0
@@ -124,7 +125,7 @@ void control_unit(int IR, short int *sc)
         return;
     }
 
-    char opcode = ((IR &= separa_cop) >> 26);
+    char opcode = ((IR & separa_cop) >> 26);
 
     switch(opcode){
         case 0x0: //caso seja tipo R
@@ -140,15 +141,19 @@ void control_unit(int IR, short int *sc)
             break;
         case 0x23: //caso seja lw
             if(*sc == (short int)0b1001010000011000){ //se estiver no estado 1, vai pro 2
+                //printf("estado 1-2\n");
                 *sc = 0b1001010000010100;
             }
             else if(*sc == (short int)0b1001010000010100){ //se estiver no estado 2, vai pro 3
+                //printf("estado 2-3\n");
                 *sc = 0b1001110000010100;
             }
             else if(*sc == (short int)0b1001110000010100){ //se estiver no estado 3, vai pro 4
+                //printf("estado 3-4\n");
                 *sc = 0b1001110000010111;
             }
             else if(*sc == (short int)0b1001110000010111){ //se estiver no estado 4, vai pro 0
+                //printf("estado 4-0\n");
                 *sc = 0b1001010000001000;
             }
             break;
@@ -185,67 +190,68 @@ void control_unit(int IR, short int *sc)
     return;
 }
 
-
 void instruction_fetch(short int sc, int PC, int ALUOUT, int IR, int* PCnew, int* IRnew, int* MDRnew)
 {
+    char zero, overflow;
 
-     if(sc == (short int)0b1001010000001000){ //estado 0
+    if(sc == (short int)0b1001010000001000){ //estado 0
+        printf("\nPróximo IR: memory[%d] = %d", PC, memory[PC]);
         *IRnew = memory[PC];
-        alu(PC, 1, ativa_soma, PCnew, NULL, NULL);
-     }
+        alu(PC, 1, ativa_soma, PCnew, &zero, &overflow);
+    }
 
-     if(IR == 0){
+    if(IR == 0){
+        printf("DSDSDAS");
         loop = 0;
-     }
-
-     return;
+    }
+    return;
 }
-
 
 void decode_register(short int sc, int IR, int PC, int A, int B, int *Anew, int *Bnew, int *ALUOUTnew)
 {
-    if(sc == (short int)0b1001010000011000){
+    char zero, overflow;
 
-        printf("entrou no decode\n");
+    if(sc == (short int)0b1001010000011000){
 
         int rs = ((IR & separa_rs) >> 21);
         int rt = ((IR & separa_rt) >> 16);
 
+        printf("\nRS: %d, RT: %d", rs, rt);
+
         *Anew = reg[rs];
         *Bnew = reg[rt];
 
-        int ir15_0 = (IR & separa_imediato);
-
-        alu(PC, ir15_0, ativa_soma, ALUOUTnew, NULL, NULL);
+        alu(PC, ((IR & separa_imediato)), ativa_soma, ALUOUTnew, &zero, &overflow);
     }
     return;
 }
 
 void exec_calc_end_branch(short int sc, int A, int B, int IR, int PC, int ALUOUT, int *ALUOUTnew, int *PCnew)
 {
-    char zero; //flag pra receber a flag de zero
-    int ir15_0 = (IR & separa_imediato); //pega os 15 bits menos significativos da instrução
-    char alu_op = alu_control(IR, sc); //verifica qual operacao a ula vai fazer baseado na instrucao
+    char zero, overflow, alu_op;
 
     switch((short int)sc){
-        case (short int)0b1001010000010100:      //se estiver no estado 2 (lw ou sw)
-            *ALUOUTnew = A + ir15_0;             //soma esses bits com o conteúdo de rs que foi armazenado em A no ciclo passado     }
+        case (short int)0b1001010000010100:
+            printf("\nA: %d", A);      //se estiver no estado 2 (lw ou sw)
+            *ALUOUTnew = A + (IR & separa_imediato);          //soma esses bits com o conteúdo de rs que foi armazenado em A no ciclo passado     }
             break;
 
         case (short int)0b1001010001000100: //se estiver no estado 6 (tipo R)
-            alu(A, B, alu_op, ALUOUTnew, NULL, NULL); //realiza a operacao na ula e armazena o resultado em ALUOUTnew
+            alu_op = alu_control(IR, sc);
+            alu(A, B, alu_op, ALUOUTnew, &zero, &overflow); //realiza a operacao na ula e armazena o resultado em ALUOUTnew
             break;
 
         case (short int)0b1001011010100100: //se estiver no estado 8 (BEQ)
-            alu(A, B, ativa_subtracao, ALUOUTnew, &zero, NULL); //verifica se A = B
+            printf("\nA: %d, B: %d", A, B);
+            alu(A, B, ativa_subtracao, ALUOUTnew, &zero, &overflow); //verifica se A = B
             if(zero == 1)
-                PC = ALUOUT; //se for igual, PC recebe o endereço do branch calculado no ciclo anterior
+                *PCnew = ALUOUT; //se for igual, PC recebe o endereço do branch calculado no ciclo anterior
             break;
 
         case (short int)0b1001010100011000: //se estivar no estado 9 (Jump)
             PC &= separa_4bits_PC;          //pega os 4 bits mais significativos de PC - PC[31-28]
             IR &= separa_endereco_jump;     //pega os 26 bits menos significativos de IR - IR[25-0]
-            PC = PC | IR;                   //concatena os bits de PC com IR.
+            *PCnew = PC | IR;                       //concatena os bits de PC com IR.
             break;
 
         default:
@@ -254,32 +260,42 @@ void exec_calc_end_branch(short int sc, int A, int B, int IR, int PC, int ALUOUT
      return;
 }
 
-void write_r_access_memory(short int sc, int IR, int MDR, int ALUOUT, int PC, int *MDRnew, int *IRnew)
+void write_r_access_memory(short int sc, int B, int IR, int ALUOUT, int PC, int *MDRnew, int *IRnew)
 {
-    int rt = ((IR & separa_rt) >> 16); //pega o registrador de origem rt
+    //printf("write_r_access_memory\n");
+
+    //int rt = ((IR & separa_rt) >> 16); //pega o registrador de origem rt
     int rd = ((IR & separa_rd) >> 11); //pega o registrador de destino rd
 
     switch((short int)sc){
         case (short int)0b1001110000010100: //se estiver no estado 3 (LW)
-            *MDRnew = memory[ALUOUT];        //coloca a informação da memória no registrador de dados de memória
+            printf("\nALUOUT = %d", ALUOUT);
+            *MDRnew = memory[ALUOUT];
+            printf("\nmem[ALUout]: %d", memory[ALUOUT]);        //coloca a informação da memória no registrador de dados de memória
             break;
 
         case (short int)0b1011110000011000: //se estiver no estado 5 (conclusão SW)
-            memory[ALUOUT] = reg[rt];       //coloca na memoria o o conteúdo de rt
+            printf("\nALUOUT = %d e B = %d", ALUOUT, B);
+            memory[ALUOUT] = B;       //coloca na memoria o conteúdo de rt
             break;
 
         case (short int)0b1001010001000111: //se estiver no estado 7 (conclusão tipo R)
+            printf("\nFez o ADD");
             reg[rd] = ALUOUT;               //coloca o resultado da operacao no registrador de destino rd
             break;
 
         default:
             break;
     }
+    return;
 }
 
 void write_ref_mem(short int sc, int IR, int MDR, int ALUOUT)
 {
+
+
     if(sc == (short int)0b1001110000010111){ //se estiver no estado 4 (conclusão LW)
+        printf("\nMDR: %d", MDR);
         int rt = ((IR & separa_rt) >> 16);
         reg[rt] = MDR;
     }

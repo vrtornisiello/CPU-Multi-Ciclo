@@ -25,11 +25,11 @@ CC = gcc
 
 
 $(BIN) : $(OBJECTS) 
-	$(CC) $^ -o $@ -g
+	$(CC) $^ -o $@
 
 
 %.o : %.c
-	$(CC) $(CPPFLAGS) $(CFLAGS) -c $< 
+	$(CC) $(CPPFLAGS) $(CFLAGS) -c $< -g
 
 %.d : %.c
 	$(CC) $(CPPFLAGA) $(CFLAGS) -MM -MT '$(<:%.c=%.o) $@' $< -o $@

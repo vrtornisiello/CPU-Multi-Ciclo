@@ -35,7 +35,7 @@ int S_C
 
 // mascaras
 // usadas para ativar e desativar o bit zero. Atuam na variavel global zero (um char - 8bits)
-#define ativa_bit_zero        0x01	// 00000001		usada com |
+#define ativa_bit_zero        0x01	// 0000 0001		usada com |
 #define desativa_bit_zero     0xfe  // 1111 1110		usada com &
 
 // usada para separar o bit zero da variavel global zero (um char - 8bits) (posicao 0)

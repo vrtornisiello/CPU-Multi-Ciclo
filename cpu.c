@@ -67,7 +67,6 @@ int main (int argc, char *argv[])
     /* Variables zero and overflow are return arguments and therefore don't
        need to be initialized. */
 
-
     /* Memory. */
     memory[0] = 0x8c480000;  // 1000 1100 0100 1000 0000 0000 0000 0000  lw $t0, 0($v0) *5*
     memory[1] = 0x010c182a;  // 0000 0001 0000 1100 0001 1000 0010 1010  slt $v1, $t0, $t4 *4*
@@ -91,7 +90,7 @@ int main (int argc, char *argv[])
 
 
     /* Registers. */
-    reg[2]  = 80; // $v0
+    reg[2]  = 20; // $v0
     reg[11] = 4;  // $t3
     reg[12] = 0;  // $t4
     reg[13] = 1;  // $t5
@@ -103,7 +102,6 @@ int main (int argc, char *argv[])
 
 	/* The following functional units shall be executed at every cycle.
 	   The control signals in sc will enable/disable the effective execution. */
-
         control_unit(IR, &sc);
         instruction_fetch(sc, PC, ALUOUT, IR, &PCnew, &IRnew, &MDRnew);
         decode_register(sc, IR, PC, A, B, &Anew, &Bnew, &ALUOUTnew);
@@ -121,6 +119,10 @@ int main (int argc, char *argv[])
         A = Anew;
         B = Bnew;
         ALUOUT = ALUOUTnew;
+
+        /*printf("\n");
+        printf("%d", A);
+        printf("%d", B);*/
 
 	/* End of cycle. */
 

@@ -18,7 +18,6 @@
    along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
 
-
 /* After you have implemented your functions, you may safely remove these lines. */
 #include <stdio.h>
 #include <stdlib.h>

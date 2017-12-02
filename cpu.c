@@ -62,7 +62,7 @@ int main (int argc, char *argv[])
 
   char ula_op = 0;
 
-    int nr_cycles = 0; 		/* Counts the number of executed cycles. */
+  int nr_cycles = 0; 		/* Counts the number of executed cycles. */
 
     /* Variables zero and overflow are return arguments and therefore don't
        need to be initialized. */
@@ -88,10 +88,9 @@ int main (int argc, char *argv[])
     memory[25] = 20;
     memory[26] = -1;
 
-
     /* Registers. */
     reg[2]  = 20; // $v0
-    reg[11] = 4;  // $t3
+    reg[11] = 1;  // $t3
     reg[12] = 0;  // $t4
     reg[13] = 1;  // $t5
 
@@ -102,6 +101,7 @@ int main (int argc, char *argv[])
 
 	/* The following functional units shall be executed at every cycle.
 	   The control signals in sc will enable/disable the effective execution. */
+        printf("\nNum. Ciclos: %d", nr_cycles);
         control_unit(IR, &sc);
         instruction_fetch(sc, PC, ALUOUT, IR, &PCnew, &IRnew, &MDRnew);
         decode_register(sc, IR, PC, A, B, &Anew, &Bnew, &ALUOUTnew);

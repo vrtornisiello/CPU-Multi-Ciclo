@@ -105,7 +105,7 @@ int alu(int a, int b, char alu_op, int *result_alu, char *zero, char *overflow)
     else
         *zero &= desativa_bit_zero;
 
-  return 0;
+    return 0;
 }
 
 void control_unit(int IR, short int *sc)
@@ -189,10 +189,6 @@ void instruction_fetch(short int sc, int PC, int ALUOUT, int IR, int* PCnew, int
         *IRnew = memory[PC];
         alu(PC, 1, ativa_soma, PCnew, &zero, &overflow);
     }
-
-    if(IR == 0){
-        loop = 0;
-    }
     return;
 }
 
@@ -209,6 +205,10 @@ void decode_register(short int sc, int IR, int PC, int A, int B, int *Anew, int 
         *Bnew = reg[rt];
 
         alu(PC, ((IR & separa_imediato) << 2), ativa_soma, ALUOUTnew, &zero, &overflow);
+    }
+
+    if(IR == 0){
+        loop = 0;
     }
     return;
 }

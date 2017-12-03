@@ -37,7 +37,7 @@ char alu_control(int IR, short int sc)
 
     sc >>= 5;
 
-    switch((short int)sc){
+    switch(sc){
         case (short int)0b00:
             return ativa_soma; //0b0010 - soma
             break;
@@ -100,7 +100,6 @@ int alu(int a, int b, char alu_op, int *result_alu, char *zero, char *overflow)
         default:
             break;
     }
-
     if(*result_alu == 0)
         *zero |= ativa_bit_zero;
     else
@@ -111,8 +110,6 @@ int alu(int a, int b, char alu_op, int *result_alu, char *zero, char *overflow)
 
 void control_unit(int IR, short int *sc)
 {
-    //getchar();
-    //printf("IR: %d", IR);
     if(IR == -1){
         *sc = 0b1001010000001000; //estado 0
         return;
@@ -139,19 +136,15 @@ void control_unit(int IR, short int *sc)
             break;
         case 0x23: //caso seja lw
             if(*sc == (short int)0b1001010000011000){ //se estiver no estado 1, vai pro 2
-                //printf("estado 1-2\n");
                 *sc = 0b1001010000010100;
             }
             else if(*sc == (short int)0b1001010000010100){ //se estiver no estado 2, vai pro 3
-                //printf("estado 2-3\n");
                 *sc = 0b1001110000010100;
             }
             else if(*sc == (short int)0b1001110000010100){ //se estiver no estado 3, vai pro 4
-                //printf("estado 3-4\n");
                 *sc = 0b1001110000010111;
             }
             else if(*sc == (short int)0b1001110000010111){ //se estiver no estado 4, vai pro 0
-                //printf("estado 4-0\n");
                 *sc = 0b1001010000001000;
             }
             break;
@@ -192,9 +185,6 @@ void instruction_fetch(short int sc, int PC, int ALUOUT, int IR, int* PCnew, int
 {
     char zero, overflow;
 
-    printf(" IR: %d", IR);
-    getchar();
-
     if(sc == (short int)0b1001010000001000){ //estado 0
         *IRnew = memory[PC];
         alu(PC, 1, ativa_soma, PCnew, &zero, &overflow);
@@ -227,7 +217,7 @@ void exec_calc_end_branch(short int sc, int A, int B, int IR, int PC, int ALUOUT
 {
     char zero = 0, overflow, alu_op;
 
-    switch((short int)sc){
+    switch(sc){
         case (short int)0b1001010000010100:
             *ALUOUTnew = A + (IR & separa_imediato);//soma esses bits com o conteúdo de rs que foi armazenado em A no ciclo passado     }
             break;
@@ -239,17 +229,14 @@ void exec_calc_end_branch(short int sc, int A, int B, int IR, int PC, int ALUOUT
 
         case (short int)0b1001011010100100: //se estiver no estado 8 (BEQ)
             alu(A, B, ativa_subtracao, ALUOUTnew, &zero, &overflow); //verifica se A = B
-            if(zero == 1){
-                *PCnew = ALUOUT;
-                //printf("ALUOUT: %d", ALUOUT); //se for igual, PC recebe o endereço do branch calculado no ciclo anterior
-            }
+            if(zero == 1)
+                *PCnew = ALUOUT; //se for igual, PC recebe o endereço do branch calculado no ciclo anterior
             break;
 
         case (short int)0b1001010100011000: //se estivar no estado 9 (Jump)
             PC &= separa_4bits_PC;          //pega os 4 bits mais significativos de PC - PC[31-28]
             IR &= separa_endereco_jump;     //pega os 26 bits menos significativos de IR - IR[25-0]
             *PCnew = PC | IR;               //concatena os bits de PC com IR.
-            printf(" Jump");
             break;
 
         default:
@@ -262,7 +249,7 @@ void write_r_access_memory(short int sc, int B, int IR, int ALUOUT, int PC, int 
 {
     int rd = ((IR & separa_rd) >> 11); //pega o registrador de destino rd
 
-    switch((short int)sc){
+    switch(sc){
         case (short int)0b1001110000010100: //se estiver no estado 3 (LW)
             *MDRnew = memory[ALUOUT];   //coloca a informação da memória no registrador de dados de memória
             break;

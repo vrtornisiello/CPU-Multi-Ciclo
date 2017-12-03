@@ -101,7 +101,6 @@ int main (int argc, char *argv[])
 
 	/* The following functional units shall be executed at every cycle.
 	   The control signals in sc will enable/disable the effective execution. */
-        printf("\nNum. Ciclos: %d", nr_cycles);
         control_unit(IR, &sc);
         instruction_fetch(sc, PC, ALUOUT, IR, &PCnew, &IRnew, &MDRnew);
         decode_register(sc, IR, PC, A, B, &Anew, &Bnew, &ALUOUTnew);
@@ -119,10 +118,6 @@ int main (int argc, char *argv[])
         A = Anew;
         B = Bnew;
         ALUOUT = ALUOUTnew;
-
-        /*printf("\n");
-        printf("%d", A);
-        printf("%d", B);*/
 
 	/* End of cycle. */
 
